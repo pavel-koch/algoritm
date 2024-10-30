@@ -1,5 +1,6 @@
 package org.example;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class IntegerArrayList implements IntegerList {
@@ -7,16 +8,26 @@ public class IntegerArrayList implements IntegerList {
     private Integer[] table;
     private int size = 0;
     private static int currentCapacity;
+    private static double multiplicationFactor;
     private final static int DEFAULT_CAPACITY = 10;
+    private final static double DEFAULT_MULTIPLICATION_FACTOR = 1.5;
 
     public IntegerArrayList(int capacity) {
         this.table = new Integer[capacity];
-        currentCapacity = capacity;
+        this.currentCapacity = capacity;
+        this.multiplicationFactor = DEFAULT_MULTIPLICATION_FACTOR;
     }
 
     public IntegerArrayList() {
         this.table = new Integer[DEFAULT_CAPACITY];
-        currentCapacity = DEFAULT_CAPACITY;
+        this.currentCapacity = DEFAULT_CAPACITY;
+        this.multiplicationFactor = DEFAULT_MULTIPLICATION_FACTOR;
+    }
+
+    public IntegerArrayList(int capacity, double multiplicationFactor) {
+        this.table = new Integer[capacity];
+        this.currentCapacity = capacity;
+        this.multiplicationFactor = multiplicationFactor;
     }
 
     @Override
@@ -85,7 +96,7 @@ public class IntegerArrayList implements IntegerList {
     public boolean contains(Integer item) {
         checkNull(item);
         Integer[] copy = toArray();
-
+        sort(copy);
         return binarySearch(table, item) != 1;
     }
 
@@ -152,7 +163,7 @@ public class IntegerArrayList implements IntegerList {
 
     public void validateSize() {
         if (size == table.length) {
-            throw new TableIsFullExeption();
+            grow();
         }
     }
 
@@ -193,5 +204,53 @@ public class IntegerArrayList implements IntegerList {
             }
         }
         return -1;
+    }
+
+    private void grow() {
+        Integer[] newArray = new Integer[(int) (table.length * multiplicationFactor)];
+        System.arraycopy(table, 0, newArray,0, table.length);
+        table = newArray;
+    }
+
+    public static void mergeSort(Integer[] arr) {
+        if (arr.length < 2) {
+            return;
+        }
+        int mid = arr.length / 2;
+        Integer[] left = new Integer[mid];
+        Integer[] right = new Integer[arr.length - mid];
+
+        for (int i = 0; i < left.length; i++) {
+            left[i] = arr[i];
+        }
+
+        for (int i = 0; i < right.length; i++) {
+            right[i] = arr[mid + i];
+        }
+
+        mergeSort(left);
+        mergeSort(right);
+
+        merge(arr, left, right);
+    }
+
+    public static void merge(Integer[] arr, Integer[] left, Integer[] right) {
+
+        int mainP = 0;
+        int leftP = 0;
+        int rightP = 0;
+        while (leftP < left.length && rightP < right.length) {
+            if (left[leftP] <= right[rightP]) {
+                arr[mainP++] = left[leftP++];
+            } else {
+                arr[mainP++] = right[rightP++];
+            }
+        }
+        while (leftP < left.length) {
+            arr[mainP++] = left[leftP++];
+        }
+        while (rightP < right.length) {
+            arr[mainP++] = right[rightP++];
+        }
     }
 }
